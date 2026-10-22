@@ -108,24 +108,12 @@ class WineFeatures(BaseModel):
     fixed_acidity: float
     volatile_acidity: float
     
-def prepare_features_serve(values: list) -> pd.DataFrame:
-    """Pure feature transformation function for prediction serving."""
-    feature_columns = [
-        "fixed acidity",
-        "volatile acidity",
-        "citric acid",
-        "residual sugar",
-        "chlorides",
-        "free sulfur dioxide",
-        "total sulfur dioxide",
-        "density",
-        "pH",
-        "sulphates",
-        "alcohol",
-    ]
-    vals = list(values)
-    vals[6] = vals[6] / 1000.0  # Accidental change! (index 6 is 'total sulfur dioxide')
-    return pd.DataFrame(columns=feature_columns, data=[values])
+def prepare_features_serve(df):
+    # Ensure density and alcohol are scaled/converted identically to training
+    # Example: if training expects density in g/mL and serving provides kg/L, convert:
+    # df['density'] = df['density'] / 1000.0
+    # df['alcohol'] = df['alcohol'] * 10.0 (if serving is in % and training in decimal)
+    return df
 
 
 @app.post("/predict")
