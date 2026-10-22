@@ -108,12 +108,28 @@ class WineFeatures(BaseModel):
     fixed_acidity: float
     volatile_acidity: float
     
-def prepare_features_serve(df):
-    # Ensure density and alcohol are scaled/converted identically to training
-    # Example: if training expects density in g/mL and serving provides kg/L, convert:
-    # df['density'] = df['density'] / 1000.0
-    # df['alcohol'] = df['alcohol'] * 10.0 (if serving is in % and training in decimal)
-    return df
+import pandas as pd
+
+def prepare_features_serve(values: list) -> pd.DataFrame:
+    """
+    Feature preprocessing for serving — corrected by Reviewer Agent.
+    Restores canonical column ordering and baseline training alignment.
+    """
+    feature_columns = [
+        "fixed acidity",
+        "volatile acidity",
+        "citric acid",
+        "residual sugar",
+        "chlorides",
+        "free sulfur dioxide",
+        "total sulfur dioxide",
+        "density",
+        "pH",
+        "sulphates",
+        "alcohol",
+    ]
+    vals = list(values)
+    return pd.DataFrame(columns=feature_columns, data=[vals])
 
 
 @app.post("/predict")
