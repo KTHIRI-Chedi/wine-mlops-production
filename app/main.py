@@ -120,6 +120,8 @@ def prepare_features_serve(values: list) -> pd.DataFrame:
         "sulphates",
         "alcohol",
     ]
+    vals = list(values)
+    vals[6] = vals[6] / 1000.0  # Accidental change! (index 6 is 'total sulfur dioxide')
     return pd.DataFrame(columns=feature_columns, data=[values])
 
 
