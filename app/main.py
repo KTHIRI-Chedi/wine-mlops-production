@@ -104,7 +104,10 @@ async def home():
 class PredictionInput(BaseModel):
     data: list
 
-
+class WineFeatures(BaseModel):
+    fixed_acidity: float
+    volatile_acidity: float
+    
 def prepare_features_serve(values: list) -> pd.DataFrame:
     """Pure feature transformation function for prediction serving."""
     feature_columns = [
