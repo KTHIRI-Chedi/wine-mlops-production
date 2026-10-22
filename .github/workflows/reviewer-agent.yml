@@ -1,0 +1,44 @@
+name: Reviewer Agent PR Check
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  code-reviewer-p2:
+    name: Agent 2 (P2) Automated Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out target production code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai pydantic pyyaml pandas pyarrow
+
+      # Check out the Reviewer Agent Engine from Pi-Mlops
+      - name: Check out Reviewer Agent Engine
+        uses: actions/checkout@v4
+        with:
+          repository: 'KTHIRI-Chedi/Pi-Mlops'
+          ref: 'feature/p2-reviewer-agent'
+          path: 'agent_core'
+          token: ${{ secrets.AGENT_REPO_TOKEN || github.token }}
+
+      - name: Run Reviewer Agent (LLM Primary)
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          PYTHONPATH: agent_core
+        run: |
+          python -m agents.reviewer.cli --sha HEAD --base-ref origin/${{ github.base_ref }}
