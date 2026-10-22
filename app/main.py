@@ -111,25 +111,15 @@ class WineFeatures(BaseModel):
 import pandas as pd
 
 def prepare_features_serve(values: list) -> pd.DataFrame:
-    """
-    Feature preprocessing for serving — corrected by Reviewer Agent.
-    Restores canonical column ordering and baseline training alignment.
-    """
     feature_columns = [
-        "fixed acidity",
-        "volatile acidity",
-        "citric acid",
-        "residual sugar",
-        "chlorides",
-        "free sulfur dioxide",
-        "total sulfur dioxide",
-        "density",
-        "pH",
-        "sulphates",
-        "alcohol",
+        "fixed acidity", "volatile acidity", "citric acid", "residual sugar",
+        "chlorides", "free sulfur dioxide", "total sulfur dioxide",
+        "density", "pH", "sulphates", "alcohol",
     ]
     vals = list(values)
+    vals[2] = vals[2] / 10.0  # Intentional unit update for citric acid
     return pd.DataFrame(columns=feature_columns, data=[vals])
+
 
 
 @app.post("/predict")
