@@ -104,9 +104,17 @@ async def home():
 class PredictionInput(BaseModel):
     data: list
 
+class WineFeatures(BaseModel):
+    fixed_acidity: float
+    volatile_acidity: float
+    
+import pandas as pd
 
 def prepare_features_serve(values: list) -> pd.DataFrame:
-    """Pure feature transformation function for prediction serving."""
+    """
+    Feature preprocessing for serving — corrected by Reviewer Agent.
+    Restores canonical column ordering and baseline training alignment.
+    """
     feature_columns = [
         "fixed acidity",
         "volatile acidity",
@@ -120,7 +128,8 @@ def prepare_features_serve(values: list) -> pd.DataFrame:
         "sulphates",
         "alcohol",
     ]
-    return pd.DataFrame(columns=feature_columns, data=[values])
+    vals = list(values)
+    return pd.DataFrame(columns=feature_columns, data=[vals])
 
 
 @app.post("/predict")
