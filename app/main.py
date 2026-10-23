@@ -116,45 +116,47 @@ import pandas as pd
 
 import pandas as pd
 
+import pandas as pd
+
 def prepare_features_serve(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Prepare features for serving to match training pipeline.
+    Prepare features for serving to match the training pipeline exactly.
     
-    Args:
-        df: Input DataFrame with raw features
-        
-    Returns:
-        DataFrame with features prepared for model inference
+    This function ensures that the features passed to the model are in the same
+    units and format as those used during training. It specifically addresses
+    the detected skew in 'alcohol' and 'density' by removing any unintended
+    unit conversions or scaling that diverges from the training data.
     """
-    # Ensure correct column names
-    expected_columns = [
-        'fixed acidity', 'volatile acidity', 'citric acid', 'residual sugar',
-        'chlorides', 'free sulfur dioxide', 'total sulfur dioxide',
-        'alcohol', 'pH', 'sulphates', 'density'
+    # Ensure we are working with a copy to avoid modifying the original input
+    df = df.copy()
+    
+    # Define the expected feature columns in the exact order used during training
+    feature_columns = [
+        'fixed acidity',
+        'volatile acidity',
+        'citric acid',
+        'residual sugar',
+        'chlorides',
+        'free sulfur dioxide',
+        'total sulfur dioxide',
+        'alcohol',
+        'pH',
+        'sulphates',
+        'density'
     ]
     
-    # Check for missing columns
-    missing_cols = [col for col in expected_columns if col not in df.columns]
-    if missing_cols:
-        raise ValueError(f"Missing expected columns: {missing_cols}")
+    # Select only the relevant feature columns
+    df = df[feature_columns]
     
-    # Create a copy to avoid modifying the original
-    df_serve = df.copy()
+    # Ensure all columns are numeric
+    for col in feature_columns:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
     
-    # Fix alcohol: ratio 0.1017 suggests serving values are ~10x smaller than training
-    # This indicates a unit mismatch (e.g., % vs. decimal or similar scaling)
-    # To restore parity, we need to align serving to training scale
-    # Based on ratio 0.1017, multiply serving alcohol by ~9.83 to match training
-    df_serve['alcohol'] = df_serve['alcohol'] * 9.8334
+    # Handle any missing values (if applicable in serving context)
+    # For now, we assume no missing values in serving, but drop rows if any exist
+    df = df.dropna()
     
-    # Fix density: ratio 9.8334 suggests serving values are ~10x larger than training
-    # To restore parity, divide serving density by ~9.83 to match training
-    df_serve['density'] = df_serve['density'] / 9.8334
-    
-    # Ensure all other features are passed through unchanged
-    # (They already show ratio_median = 1.0 and identical_share = 1.0)
-    
-    return df_serve[expected_columns]
+    return df
 
 
 @app.post("/predict")
