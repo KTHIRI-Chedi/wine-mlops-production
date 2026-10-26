@@ -110,14 +110,6 @@ class WineFeatures(BaseModel):
     
 import pandas as pd
 
-import pandas as pd
-
-import pandas as pd
-
-import pandas as pd
-
-import pandas as pd
-
 def prepare_features_serve(df: pd.DataFrame) -> pd.DataFrame:
     """
     Prepare features for serving to match training pipeline.
